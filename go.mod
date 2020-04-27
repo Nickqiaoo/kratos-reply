@@ -40,7 +40,7 @@ require (
 	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd // indirect
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e // indirect
+	golang.org/x/tools v0.0.0-20200426102838-f3a5411a4c3b // indirect
 	google.golang.org/genproto v0.0.0-20200420144010-e5e8543f8aeb
 	google.golang.org/grpc v1.29.0
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect

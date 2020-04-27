@@ -16,9 +16,9 @@
         "application/json"
     ],
     "paths": {
-        "/demo.service.v1.Demo/Ping": {
+        "/demo.service.v1.Reply/Ping": {
             "get": {
-                "summary": "/demo.service.v1.Demo/Ping",
+                "summary": "/demo.service.v1.Reply/Ping",
                 "responses": {
                     "200": {
                         "description": "A successful response.",
@@ -39,101 +39,12 @@
                     }
                 },
                 "tags": [
-                    "demo.service.v1.Demo"
-                ]
-            }
-        },
-        "/demo.service.v1.Demo/SayHello": {
-            "get": {
-                "summary": "/demo.service.v1.Demo/SayHello",
-                "responses": {
-                    "200": {
-                        "description": "A successful response.",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "message": {
-                                    "type": "string"
-                                },
-                                "data": {
-                                    "$ref": "#/definitions/.google.protobuf.Empty"
-                                }
-                            }
-                        }
-                    }
-                },
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "demo.service.v1.Demo"
-                ]
-            }
-        },
-        "/kratos-demo/say_hello": {
-            "get": {
-                "summary": "/kratos-demo/say_hello",
-                "responses": {
-                    "200": {
-                        "description": "A successful response.",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "code": {
-                                    "type": "integer"
-                                },
-                                "message": {
-                                    "type": "string"
-                                },
-                                "data": {
-                                    "$ref": "#/definitions/.demo.service.v1.HelloResp"
-                                }
-                            }
-                        }
-                    }
-                },
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "demo.service.v1.Demo"
+                    "demo.service.v1.Reply"
                 ]
             }
         }
     },
     "definitions": {
-        ".demo.service.v1.HelloReq": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "name"
-            ]
-        },
-        ".demo.service.v1.HelloResp": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                }
-            }
-        },
         ".google.protobuf.Empty": {
             "type": "object",
             "properties": {},

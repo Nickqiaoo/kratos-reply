@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	pb "kratos-reply/api"
 	"kratos-reply/internal/dao"
@@ -12,7 +11,7 @@ import (
 	"github.com/google/wire"
 )
 
-var Provider = wire.NewSet(New, wire.Bind(new(pb.DemoServer), new(*Service)))
+var Provider = wire.NewSet(New, wire.Bind(new(pb.ReplyServer), new(*Service)))
 
 // Service service.
 type Service struct {
@@ -28,22 +27,6 @@ func New(d dao.Dao) (s *Service, cf func(), err error) {
 	}
 	cf = s.Close
 	err = paladin.Watch("application.toml", s.ac)
-	return
-}
-
-// SayHello grpc demo func.
-func (s *Service) SayHello(ctx context.Context, req *pb.HelloReq) (reply *empty.Empty, err error) {
-	reply = new(empty.Empty)
-	fmt.Printf("hello %s", req.Name)
-	return
-}
-
-// SayHelloURL bm demo func.
-func (s *Service) SayHelloURL(ctx context.Context, req *pb.HelloReq) (reply *pb.HelloResp, err error) {
-	reply = &pb.HelloResp{
-		Content: "hello " + req.Name,
-	}
-	fmt.Printf("hello url %s", req.Name)
 	return
 }
 
