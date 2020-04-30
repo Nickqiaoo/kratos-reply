@@ -38,3 +38,7 @@ func (s *Service) Ping(ctx context.Context, e *empty.Empty) (*empty.Empty, error
 // Close close the resource.
 func (s *Service) Close() {
 }
+
+// AddReply add a reply.
+func (s *Service) AddReply(c context.Context, mid, oid int64, tp, plat int8, ats []int64, accessKey, cookie, captcha, msg, dev, ver, platform string, build int64, buvid string) (r *model.Reply, uri string, err error) {
+}

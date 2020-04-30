@@ -3,14 +3,14 @@ package http
 import (
 	"strconv"
 
-	"kratos-reply/internal/model"
-	bm "github.com/go-kratos/kratos/pkg/net/http/blademaster"
-	"github.com/go-kratos/kratos/pkg/log"
 	"github.com/go-kratos/kratos/pkg/ecode"
+	"github.com/go-kratos/kratos/pkg/log"
+	bm "github.com/go-kratos/kratos/pkg/net/http/blademaster"
+	"kratos-reply/internal/model"
+	"kratos-reply/internal/util"
 )
 
-
-func addReply(c *bm.Context){
+func addReply(c *bm.Context) {
 	var (
 		err          error
 		rp           *model.Reply
@@ -18,66 +18,35 @@ func addReply(c *bm.Context){
 		root, parent int64
 	)
 
-	params := c.Request.Form
-	midStr, _ := c.Get("mid")
-	mid := midStr.(int64)
-	oidStr := params.Get("oid")
-	tpStr := params.Get("type")
-	rtStr := params.Get("root")
-	paStr := params.Get("parent")
-	atStr := params.Get("at")
-	oid, err := strconv.ParseInt(oidStr, 10, 64)
-	if err != nil || oid <= 0 {
-		log.Warn("strconv.ParseInt(%s) error(%v)", oidStr, err)
-		err = ecode.RequestErr
-		c.JSON(nil, err)
+	parm := new(struct {
+		Mid    int64  `form:"mid" validate:"min=1,required"`
+		Oid    int64  `form:"oid" validate:"min=1,required"`
+		Type   int8   `form:"type" validate:"required"`
+		Msg    string `form:"message" validate:"required"`
+		Root   int64  `form:"root" validate:"required"`
+		Parent int64  `form:"parent" validate:"required"`
+		AtStr  string `form:"at" validate:"required"`
+	})
+	if err = c.Bind(parm); err != nil {
+		c.JSON(nil, ecode.RequestErr)
 		return
 	}
-	if rtStr != "" {
-		root, err = strconv.ParseInt(rtStr, 10, 64)
-		if err != nil {
-			log.Warn("strconv.ParseInt(%s) error(%v)", rtStr, err)
-			err = ecode.RequestErr
-			c.JSON(nil, err)
-			return
-		}
-	}
-	if paStr != "" {
-		parent, err = strconv.ParseInt(paStr, 10, 64)
-		if err != nil {
-			log.Warn("strconv.ParseInt(%s) error(%v)", paStr, err)
-			err = ecode.RequestErr
-			c.JSON(nil, err)
-			return
-		}
-	}
-	if !((root == 0 && parent == 0) || (root > 0 && parent > 0)) {
+
+	if !((parm.Root == 0 && parm.Parent == 0) || (parm.Root > 0 && parm.Parent > 0)) {
 		log.Warn("the wrong root(%d) and parent(%d)", root, parent)
 		err = ecode.RequestErr
 		c.JSON(nil, err)
 		return
 	}
-	tp, err := strconv.ParseInt(tpStr, 10, 8)
+
+	ats, err = util.SplitInts(parm.AtStr)
 	if err != nil {
-		log.Warn("strconv.ParseInt(%s) error(%v)", tpStr, err)
+		log.Warn("utils.SplitInts(%s) error(%v)", parm.AtStr, err)
 		err = ecode.RequestErr
 		c.JSON(nil, err)
 		return
 	}
-	if !model.LegalSubjectType(int8(tp)) {
-		err = ecode.ReplyIllegalSubType
-		c.JSON(nil, err)
-		return
-	}
-	if atStr != "" {
-		ats, err = xstr.SplitInts(atStr)
-		if err != nil {
-			log.Warn("utils.SplitInts(%s) error(%v)", atStr, err)
-			err = ecode.RequestErr
-			c.JSON(nil, err)
-			return
-		}
-	}
+
 	if len(ats) > 10 {
 		log.Warn("too many people to be at len(%d)", len(ats))
 		err = ecode.ReplyTooManyAts
