@@ -8,9 +8,11 @@ import (
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 	"github.com/go-kratos/kratos/pkg/log"
 	bm "github.com/go-kratos/kratos/pkg/net/http/blademaster"
+	"kratos-reply/internal/service"
 )
 
 var svc pb.ReplyServer
+var rpSvr *service.Service
 
 // New new a bm server.
 func New(s pb.ReplyServer) (engine *bm.Engine, err error) {
@@ -37,6 +39,7 @@ func initRouter(e *bm.Engine) {
 	g := e.Group("/kratos-reply")
 	{
 		g.POST("/add", addReply)
+		g.POST("/add/reply")
 	}
 }
 

@@ -49,24 +49,15 @@ func addReply(c *bm.Context) {
 
 	if len(ats) > 10 {
 		log.Warn("too many people to be at len(%d)", len(ats))
-		err = ecode.ReplyTooManyAts
+		err = ecode.RequestErr
 		c.JSON(nil, err)
 		return
 	}
 
 	if root == 0 && parent == 0 {
-		rp, captchaURL, err = rpSvr.AddReply(c, mid, oid, int8(tp), int8(plat), ats, ak, c.Request.Header.Get("Cookie"), captcha, msg, device, version, platform, build, buvid)
+		rp, err = rpSvr.AddReply(c, parm.Mid, parm.Oid, int8(parm.Type), ats, parm.Msg)
 	} else {
-		rp, captchaURL, err = rpSvr.AddReplyReply(c, mid, oid, root, parent, int8(tp), int8(plat), ats, ak, c.Request.Header.Get("Cookie"), captcha, msg, device, version, platform, build, buvid)
-	}
-	if err != nil && err != ecode.ReplyMosaicByFilter {
-		log.Warn("rpSvr.AddReply or ReplyReply failed mid(%d) oid(%d) error(%d)", mid, oid, err)
-		data := map[string]interface{}{
-			"need_captcha": (captchaURL != ""),
-			"url":          captchaURL,
-		}
-		c.JSON(data, err)
-		return
+		rp, err = rpSvr.AddReplyReply(c, parm.Mid, parm.Oid, int8(parm.Type), ats, parm.Msg)
 	}
 	data := map[string]interface{}{
 		"rpid":       rp.RpID,
@@ -79,4 +70,8 @@ func addReply(c *bm.Context) {
 		"parent_str": strconv.FormatInt(rp.Parent, 10),
 	}
 	c.JSON(data, nil)
+}
+
+func addReplyReply(c *bm.Context){
+	
 }

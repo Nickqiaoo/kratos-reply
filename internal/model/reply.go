@@ -4,6 +4,23 @@ import (
 	xtime "github.com/go-kratos/kratos/pkg/time"
 )
 
+// subtype
+const (
+	ReplyStateNormal    = int8(0)  // normal
+	ReplyStateHidden    = int8(1)  // hidden by up
+	ReplyStateFiltered  = int8(2)  // filtered
+	ReplyStateAdminDel  = int8(3)  // delete by admin
+	ReplyStateUserDel   = int8(4)  // delete by user
+	ReplyStateMonitor   = int8(5)  // reply after audit
+	ReplyStateGarbage   = int8(6)  // spam reply
+	ReplyStateTop       = int8(7)  // top
+	ReplyStateUpDel     = int8(8)  // delete by up
+	ReplyStateBlacklist = int8(9)  // in a blacklist
+	ReplyStateAssistDel = int8(10) // delete by assistant
+	ReplyStateAudit     = int8(11) // 监管中
+	ReplyStateFolded    = int8(12) // 被折叠
+)
+
 // Reply Reply
 type Reply struct {
 	RpID      int64      `json:"rpid"`
@@ -45,7 +62,7 @@ type Content struct {
 	RpID    int64  `json:"-"`
 	Message string `json:"message"`
 
-	//Ats     Int64Bytes `json:"ats,omitempty"`
+	Ats     Int64Bytes `json:"ats,omitempty"`
 	//Topics  Mstr       `json:"topics,omitempty"`
 	IP      uint32     `json:"ipi,omitempty"`
 	Plat    int8       `json:"plat"`
