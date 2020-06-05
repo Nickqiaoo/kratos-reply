@@ -24,7 +24,7 @@ func NewDB() (db *sql.DB, cf func(), err error) {
 	return
 }
 
-func (d *dao) RawArticle(ctx context.Context, id int64) (art *model.Article, err error) {
+func (d *dao) RawSubject(ctx context.Context, oid int64, tp int8) (sub *model.Subject, err error) {
 	// get data from db
 	return
 }

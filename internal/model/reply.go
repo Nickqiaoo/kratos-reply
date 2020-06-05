@@ -6,6 +6,9 @@ import (
 
 // subtype
 const (
+	SubStateNormal = int8(0)
+	SubStateForbid = int8(1)
+	
 	ReplyStateNormal    = int8(0)  // normal
 	ReplyStateHidden    = int8(1)  // hidden by up
 	ReplyStateFiltered  = int8(2)  // filtered
@@ -55,6 +58,22 @@ type Reply struct {
 	Assist  int      `json:"assist"`
 	// 是否有折叠评论
 	//Folder Folder `json:"folder"`
+}
+
+// Subject ReplySubject
+type Subject struct {
+	ID     int64      `json:"-"`
+	Oid    int64      `json:"oid"`
+	Type   int8       `json:"type"`
+	Mid    int64      `json:"mid"`
+	Count  int        `json:"count"`
+	RCount int        `json:"rcount"`
+	ACount int        `json:"acount"`
+	State  int8       `json:"state"`
+	Attr   uint32     `json:"attr"`
+	Meta   string     `json:"meta"`
+	CTime  xtime.Time `json:"ctime"`
+	MTime  xtime.Time `json:"-"`
 }
 
 // Content ReplyContent

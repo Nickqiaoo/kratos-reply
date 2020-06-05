@@ -6,8 +6,8 @@
   type Dao interface {
 		Close()
 		Ping(ctx context.Context) (err error)
-		// bts: -nullcache=&model.Article{ID:-1} -check_null_code=$!=nil&&$.ID==-1
-		Article(c context.Context, id int64) (*model.Article, error)
+		// bts: -nullcache=&model.Subject{ID:-1} -check_null_code=$!=nil&&$.ID==-1
+		Subject(c context.Context, oid int64, tp int8) (*model.Subject, error)
 	}
 */
 
@@ -20,10 +20,10 @@ import (
 	"kratos-reply/internal/model"
 )
 
-// Article get data from cache if miss will call source method, then add to cache.
-func (d *dao) Article(c context.Context, id int64) (res *model.Article, err error) {
+// Subject get data from cache if miss will call source method, then add to cache.
+func (d *dao) Subject(c context.Context, oid int64, tp int8) (res *model.Subject, err error) {
 	addCache := true
-	res, err = d.CacheArticle(c, id)
+	res, err = d.CacheSubject(c, oid, tp)
 	if err != nil {
 		addCache = false
 		err = nil
@@ -34,23 +34,23 @@ func (d *dao) Article(c context.Context, id int64) (res *model.Article, err erro
 		}
 	}()
 	if res != nil {
-		cache.MetricHits.Inc("bts:Article")
+		cache.MetricHits.Inc("bts:Subject")
 		return
 	}
-	cache.MetricMisses.Inc("bts:Article")
-	res, err = d.RawArticle(c, id)
+	cache.MetricMisses.Inc("bts:Subject")
+	res, err = d.RawSubject(c, oid, tp)
 	if err != nil {
 		return
 	}
 	miss := res
 	if miss == nil {
-		miss = &model.Article{ID: -1}
+		miss = &model.Subject{ID: -1}
 	}
 	if !addCache {
 		return
 	}
 	d.cache.Do(c, func(c context.Context) {
-		d.AddCacheArticle(c, id, miss)
+		d.AddCacheSubject(c, oid, miss, tp)
 	})
 	return
 }

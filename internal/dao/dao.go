@@ -22,8 +22,8 @@ var Provider = wire.NewSet(New, NewDB, NewRedis, NewMC)
 type Dao interface {
 	Close()
 	Ping(ctx context.Context) (err error)
-	// bts: -nullcache=&model.Article{ID:-1} -check_null_code=$!=nil&&$.ID==-1
-	Article(c context.Context, id int64) (*model.Article, error)
+	// bts: -nullcache=&model.Subject{ID:-1} -check_null_code=$!=nil&&$.ID==-1
+	Subject(c context.Context, oid int64, tp int8) (*model.Subject, error)
 }
 
 // dao dao.
