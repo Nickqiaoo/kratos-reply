@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/go-kratos/kratos/pkg/cache/memcache"
@@ -56,9 +55,6 @@ func (d *dao) PingMC(ctx context.Context) (err error) {
 }
 
 func keySub(oid int64, tp int8) string {
-	if oid > _oidOverflow {
-		return fmt.Sprintf("%s_%d_%d", _prefixSub, oid, tp)
-	}
 	return _prefixSub + strconv.FormatInt((oid<<8)|int64(tp), 10)
 }
 

@@ -7,7 +7,6 @@ package di
 
 import (
 	"kratos-reply/internal/dao"
-	"kratos-reply/internal/server/grpc"
 	"kratos-reply/internal/server/http"
 	"kratos-reply/internal/service"
 )
@@ -54,16 +53,7 @@ func InitApp() (*App, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	server, err := grpc.New(serviceService)
-	if err != nil {
-		cleanup5()
-		cleanup4()
-		cleanup3()
-		cleanup2()
-		cleanup()
-		return nil, nil, err
-	}
-	app, cleanup6, err := NewApp(serviceService, engine, server)
+	app, cleanup6, err := NewApp(serviceService, engine)
 	if err != nil {
 		cleanup5()
 		cleanup4()

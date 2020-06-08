@@ -6,7 +6,6 @@ package di
 import (
 	"kratos-reply/internal/dao"
 	"kratos-reply/internal/service"
-	"kratos-reply/internal/server/grpc"
 	"kratos-reply/internal/server/http"
 
 	"github.com/google/wire"
@@ -14,5 +13,5 @@ import (
 
 //go:generate kratos t wire
 func InitApp() (*App, func(), error) {
-	panic(wire.Build(dao.Provider, service.Provider, http.New, grpc.New, NewApp))
+	panic(wire.Build(dao.Provider, service.Provider, http.New, NewApp))
 }

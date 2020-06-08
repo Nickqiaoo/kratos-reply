@@ -2,16 +2,15 @@ package service
 
 import (
 	"context"
-
+	
+	"kratos-reply/internal/dao"
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/wire"
-
-	pb "kratos-reply/api"
-	"kratos-reply/internal/dao"
 )
 
-var Provider = wire.NewSet(New, wire.Bind(new(pb.ReplyServer), new(*Service)))
+var Provider = wire.NewSet(New, wire.Bind(new(pb.DemoServer), new(*Service)))
 
 // Service service.
 type Service struct {
@@ -38,4 +37,3 @@ func (s *Service) Ping(ctx context.Context, e *empty.Empty) (*empty.Empty, error
 // Close close the resource.
 func (s *Service) Close() {
 }
-

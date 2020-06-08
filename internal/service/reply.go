@@ -25,7 +25,7 @@ func (s *Service) AddReply(c context.Context, mid, oid int64, tp int8, ats []int
 
 // AddReplyReply add reply to a root reply.
 func (s *Service) AddReplyReply(c context.Context, mid, oid int64, tp int8, ats []int64, msg string) (r *model.Reply, err error) {
-
+	return
 }
 
 func (s *Service) persistReply(c context.Context, mid, root, parent int64, tp int8, ats []int64, msg string, subject *model.Subject, dialog int64) (r *model.Reply, err error) {
@@ -62,7 +62,7 @@ func (s *Service) persistReply(c context.Context, mid, root, parent int64, tp in
 		},
 	}
 
-	s.dao.Databus.AddReply(c, subject.Oid, r)
+	//s.dao.Databus.AddReply(c, subject.Oid, r)
 	return
 }
 

@@ -3,7 +3,6 @@ package http
 import (
 	"net/http"
 
-	pb "kratos-reply/api"
 	"kratos-reply/internal/model"
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 	"github.com/go-kratos/kratos/pkg/log"
@@ -11,11 +10,10 @@ import (
 	"kratos-reply/internal/service"
 )
 
-var svc pb.ReplyServer
 var rpSvr *service.Service
 
 // New new a bm server.
-func New(s pb.ReplyServer) (engine *bm.Engine, err error) {
+func New(s *service.Service) (engine *bm.Engine, err error) {
 	var (
 		cfg bm.ServerConfig
 		ct paladin.TOML
@@ -26,9 +24,8 @@ func New(s pb.ReplyServer) (engine *bm.Engine, err error) {
 	if err = ct.Get("Server").UnmarshalTOML(&cfg); err != nil {
 		return
 	}
-	svc = s
+	rpSvr = s
 	engine = bm.DefaultServer(&cfg)
-	pb.RegisterReplyBMServer(engine, s)
 	initRouter(engine)
 	err = engine.Start()
 	return
@@ -44,7 +41,7 @@ func initRouter(e *bm.Engine) {
 }
 
 func ping(ctx *bm.Context) {
-	if _, err := svc.Ping(ctx, nil); err != nil {
+	if _, err := rpSvr.Ping(ctx, nil); err != nil {
 		log.Error("ping error(%v)", err)
 		ctx.AbortWithStatus(http.StatusServiceUnavailable)
 	}
