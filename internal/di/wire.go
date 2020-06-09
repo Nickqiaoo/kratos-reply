@@ -13,5 +13,5 @@ import (
 
 //go:generate kratos t wire
 func InitApp() (*App, func(), error) {
-	panic(wire.Build(dao.Provider, service.Provider, http.New, NewApp))
+	panic(wire.Build(dao.Provider, service.New, http.New, NewApp))
 }

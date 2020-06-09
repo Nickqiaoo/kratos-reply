@@ -54,11 +54,8 @@ func addReply(c *bm.Context) {
 		return
 	}
 
-	if root == 0 && parent == 0 {
-		rp, err = rpSvr.AddReply(c, parm.Mid, parm.Oid, int8(parm.Type), ats, parm.Msg)
-	} else {
-		rp, err = rpSvr.AddReplyReply(c, parm.Mid, parm.Oid, int8(parm.Type), ats, parm.Msg)
-	}
+	rp, err = rpSvr.AddReply(c, parm.Mid, parm.Oid, int8(parm.Type), ats, parm.Msg)
+
 	data := map[string]interface{}{
 		"rpid":       rp.RpID,
 		"rpid_str":   strconv.FormatInt(rp.RpID, 10),
@@ -72,6 +69,6 @@ func addReply(c *bm.Context) {
 	c.JSON(data, nil)
 }
 
-func addReplyReply(c *bm.Context){
+func reply(c *bm.Context) {
 	
 }

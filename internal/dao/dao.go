@@ -24,6 +24,8 @@ type Dao interface {
 	Ping(ctx context.Context) (err error)
 	// bts: -nullcache=&model.Subject{ID:-1} -check_null_code=$!=nil&&$.ID==-1
 	Subject(c context.Context, oid int64, tp int8) (*model.Subject, error)
+	CacheReply(c context.Context, id int64) (res *model.Reply, err error)
+	RawReply(ctx context.Context, oid, rpID int64) (r *model.Reply, err error)
 }
 
 // dao dao.

@@ -4,9 +4,11 @@ import (
 	"context"
 	"time"
 
+	"kratos-reply/internal/model"
+
+	"github.com/go-kratos/kratos/pkg/ecode"
 	"github.com/go-kratos/kratos/pkg/log"
 	xtime "github.com/go-kratos/kratos/pkg/time"
-	"kratos-reply/internal/model"
 )
 
 // AddReply add a reply.
@@ -20,11 +22,6 @@ func (s *Service) AddReply(c context.Context, mid, oid int64, tp int8, ats []int
 		return
 	}
 	r, err = s.persistReply(c, mid, rootID, parentID, tp, ats, msg, subject, dialog)
-	return
-}
-
-// AddReplyReply add reply to a root reply.
-func (s *Service) AddReplyReply(c context.Context, mid, oid int64, tp int8, ats []int64, msg string) (r *model.Reply, err error) {
 	return
 }
 
@@ -74,7 +71,7 @@ func (s *Service) GetReply(c context.Context, oid, rpID int64, tp int8) (*model.
 		err = nil // NOTE ignore error
 	}
 	if r == nil {
-		r, err = s.dao.Reply.Get(c, oid, rpID)
+		r, err = s.dao.RawReply(c, oid, rpID)
 		if err != nil {
 			log.Error("s.reply.GetReply(%d, %d) error(%v)", oid, rpID, err)
 			return nil, err
@@ -90,7 +87,6 @@ func (s *Service) GetReply(c context.Context, oid, rpID int64, tp int8) (*model.
 	return r, nil
 }
 
-
 // Subject get normal state reply subject
 func (s *Service) Subject(c context.Context, oid int64, tp int8) (*model.Subject, error) {
 	subject, err := s.dao.Subject(c, oid, tp)
@@ -101,4 +97,8 @@ func (s *Service) Subject(c context.Context, oid int64, tp int8) (*model.Subject
 		return nil, ecode.ReplyForbidReply
 	}
 	return subject, nil
+}
+
+func (s *Service) nextID(c context.Context) (int64, error){
+	return 1, nil
 }

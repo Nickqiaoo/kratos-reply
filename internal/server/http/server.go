@@ -35,8 +35,8 @@ func initRouter(e *bm.Engine) {
 	e.Ping(ping)
 	g := e.Group("/kratos-reply")
 	{
+		g.GET("", reply)
 		g.POST("/add", addReply)
-		g.POST("/add/reply")
 	}
 }
 
