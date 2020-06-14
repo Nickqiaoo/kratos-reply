@@ -99,6 +99,18 @@ func (s *Service) Subject(c context.Context, oid int64, tp int8) (*model.Subject
 	return subject, nil
 }
 
-func (s *Service) nextID(c context.Context) (int64, error){
+func (s *Service) nextID(c context.Context) (int64, error) {
 	return 1, nil
+}
+
+func (s *Service) RootReplies(c context.Context, param *model.PageParam) (page *model.PageResult, err error) {
+	subject, err := s.Subject(c, param.Oid, param.Type)
+	if err != nil {
+		return
+	}
+	roots, seconds, total, err := s.rootReplies(c, subject, param.Mid, param.Sort, param.Pn, param.Ps, 1, s.sndDefCnt)
+}
+
+func (s *Service) rootReplies(c context.Context, subject *model.Subject, mid int64, sort int8, pn, ps, secondPn, secondPs int) (roots, seconds []*model.Reply, total int, err error) {
+
 }

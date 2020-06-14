@@ -55,6 +55,10 @@ func addReply(c *bm.Context) {
 	}
 
 	rp, err = rpSvr.AddReply(c, parm.Mid, parm.Oid, int8(parm.Type), ats, parm.Msg)
+	if err != nil {
+		c.JSON(nil, err)
+		return
+	}
 
 	data := map[string]interface{}{
 		"rpid":       rp.RpID,
@@ -70,5 +74,38 @@ func addReply(c *bm.Context) {
 }
 
 func reply(c *bm.Context) {
-	
+	param := &model.PageParam{}
+
+	if err := c.Bind(param); err != nil {
+		c.JSON(nil, ecode.RequestErr)
+		return
+	}
+
+	res, err := rpSvr.RootReplies(c, param)
+	if err != nil {
+		c.JSON(nil, err)
+		return
+	}
+	data := map[string]interface{}{
+		"page": map[string]int{
+			"num":    curPage,
+			"size":   perPage,
+			"count":  res.Total,
+			"acount": res.AllCount,
+		},
+		"config": map[string]int{
+			"showentry": showEntry,
+			"showadmin": showAdmin,
+			"showfloor": showFloor,
+		},
+		"replies": res.Roots,
+		"hots":    res.Hots,
+		"upper": map[string]interface{}{
+			"mid": res.Subject.Mid,
+			"top": res.TopUpper,
+		},
+		"top":    res.TopAdmin,
+		"notice": rpSvr.RplyNotice(c, int8(plat), build, appStr, buvid),
+	}
+	c.JSON(data, nil)
 }

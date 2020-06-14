@@ -7,19 +7,17 @@ const (
 	AttrYes = uint32(1)
 )
 
-// PageParams reply page param.
-type PageParams struct {
-	Mid  int64
-	Oid  int64
-	Type int8
-	Sort int8
+// PageParam reply page param.
+type PageParam struct {
+	Mid  int64 `form:"mid" validate:"min=1,required"`
+	Oid  int64 `form:"oid" validate:"min=1,required"`
+	Type int8  `form:"type" validate:"required"`
+	Sort int8  `form:"sort" validate:"required"`
 
-	PageNum  int
-	PageSize int
+	Pn int `form:"pn" validate:"required"`
+	Ps int `form:"ps" validate:"required"`
 
-	NeedHot    bool
-	NeedSecond bool
-	Escape     bool
+	NeedHot bool `form:"needhot" validate:"required"`
 }
 
 // PageResult reply page result.

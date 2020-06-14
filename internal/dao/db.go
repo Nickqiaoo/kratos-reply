@@ -14,6 +14,10 @@ const (
 	_replySharding int64 = 200
 )
 
+func (d *dao) hit(oid int64) int64 {
+	return oid % _replySharding
+}
+
 const (
 	_selSQL        = "SELECT id,oid,type,mid,root,parent,dialog,count,rcount,`like`,hate,floor,state,attr,ctime,mtime FROM reply_%d WHERE id=?"
 	_selSubjectSQL = "SELECT oid,type,mid,count,rcount,acount,state,attr,ctime,mtime,meta FROM reply_subject_%d WHERE oid=? AND type=?"
@@ -62,8 +66,4 @@ func (d *dao) RawReply(c context.Context, oid, rpID int64) (r *model.Reply, err 
 		}
 	}
 	return
-}
-
-func (d *dao) hit(oid int64) int64 {
-	return oid % _replySharding
 }
