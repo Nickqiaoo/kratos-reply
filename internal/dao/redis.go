@@ -11,7 +11,7 @@ import (
 func NewRedis() (r *redis.Redis, cf func(), err error) {
 	var (
 		cfg redis.Config
-		ct paladin.Map
+		ct  paladin.Map
 	)
 	if err = paladin.Get("redis.toml").Unmarshal(&ct); err != nil {
 		return
@@ -20,13 +20,20 @@ func NewRedis() (r *redis.Redis, cf func(), err error) {
 		return
 	}
 	r = redis.NewRedis(&cfg)
-	cf = func(){r.Close()}
+	cf = func() { r.Close() }
 	return
 }
 
 func (d *dao) PingRedis(ctx context.Context) (err error) {
 	if _, err = d.redis.Do(ctx, "SET", "ping", "pong"); err != nil {
 		log.Error("conn.Set(PING) error(%v)", err)
+	}
+	return
+}
+
+func (d *dao) ExpireIndex(ctx context.Context, oid int64, tp, sort int8) (ok bool, err error) {
+	if ok, err = redis.Bool(d.redis.Do(ctx, "EXPIRE", keyIdx(oid, tp, sort), dao.expireRdsIdx)); err != nil {
+		log.Error("conn.Do(EXPIRE) error(%v)", err)
 	}
 	return
 }

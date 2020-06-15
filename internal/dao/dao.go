@@ -4,18 +4,19 @@ import (
 	"context"
 	"time"
 
-	"kratos-reply/internal/model"
+	kafka "github.com/Shopify/sarama"
 	"github.com/go-kratos/kratos/pkg/cache/memcache"
 	"github.com/go-kratos/kratos/pkg/cache/redis"
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 	"github.com/go-kratos/kratos/pkg/database/sql"
 	"github.com/go-kratos/kratos/pkg/sync/pipeline/fanout"
 	xtime "github.com/go-kratos/kratos/pkg/time"
+	"kratos-reply/internal/model"
 
 	"github.com/google/wire"
 )
 
-var Provider = wire.NewSet(New, NewDB, NewRedis, NewMC)
+var Provider = wire.NewSet(New, NewDB, NewRedis, NewMC, NewKafka)
 
 //go:generate kratos tool genbts
 // Dao dao interface
@@ -26,34 +27,37 @@ type Dao interface {
 	Subject(c context.Context, oid int64, tp int8) (*model.Subject, error)
 	CacheReply(c context.Context, id int64) (res *model.Reply, err error)
 	RawReply(ctx context.Context, oid, rpID int64) (r *model.Reply, err error)
+	ExpireIndex(ctx context.Context, oid int64, tp, sort int8) (ok bool, err error)
 }
 
 // dao dao.
 type dao struct {
-	db          *sql.DB
-	redis       *redis.Redis
-	mc          *memcache.Memcache
-	cache *fanout.Fanout
+	db         *sql.DB
+	redis      *redis.Redis
+	mc         *memcache.Memcache
+	kafkaPub   kafka.SyncProducer
+	cache      *fanout.Fanout
 	demoExpire int32
 }
 
 // New new a dao and return.
-func New(r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d Dao, cf func(), err error) {
-	return newDao(r, mc, db)
+func New(k kafka.SyncProducer, r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d Dao, cf func(), err error) {
+	return newDao(k, r, mc, db)
 }
 
-func newDao(r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d *dao, cf func(), err error) {
-	var cfg struct{
+func newDao(k kafka.SyncProducer, r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d *dao, cf func(), err error) {
+	var cfg struct {
 		DemoExpire xtime.Duration
 	}
 	if err = paladin.Get("application.toml").UnmarshalTOML(&cfg); err != nil {
 		return
 	}
 	d = &dao{
-		db: db,
-		redis: r,
-		mc: mc,
-		cache: fanout.New("cache"),
+		db:         db,
+		redis:      r,
+		mc:         mc,
+		kafkaPub:   k,
+		cache:      fanout.New("cache"),
 		demoExpire: int32(time.Duration(cfg.DemoExpire) / time.Second),
 	}
 	cf = d.Close

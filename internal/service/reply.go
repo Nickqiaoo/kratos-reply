@@ -112,5 +112,68 @@ func (s *Service) RootReplies(c context.Context, param *model.PageParam) (page *
 }
 
 func (s *Service) rootReplies(c context.Context, subject *model.Subject, mid int64, sort int8, pn, ps, secondPn, secondPs int) (roots, seconds []*model.Reply, total int, err error) {
+	var (
+		rootMap map[int64]*model.Reply
+	)
+	// get root replies
+	rootIDs, total, err := s.rootReplyIDs(c, subject, sort, pn, ps)
+	if err != nil {
+		return
+	}
+	if len(rootIDs) > 0 {
+		if rootMap, err = s.repliesMap(c, subject.Oid, subject.Type, rootIDs); err != nil {
+			return
+		}
+	}
+}
 
+func (s *Service) rootReplyIDs(c context.Context, subject *model.Subject, sort int8, pn, ps int) (rpIDs []int64, count int, err error) {
+	var (
+		ok    bool
+		start = (pn - 1) * ps
+		end   = start + ps - 1
+	)
+	if count = subject.RCount; start >= count {
+		return
+	}
+	if ok, err = s.dao.ExpireIndex(c, subject.Oid, subject.Type, sort); err != nil {
+		log.Error("s.dao.ExpireIndex(%d,%d,%d) error(%v)", subject.Oid, subject.Type, sort, err)
+		return
+	}
+	if !ok {
+		switch sort {
+		case model.SortByFloor:
+			s.dao.RecoverFloorIdx(c, subject.Oid, subject.Type, end+1, false)
+			rpIDs, err = s.dao.Reply.GetIdsSortFloor(c, subject.Oid, subject.Type, start, ps)
+		case model.SortByCount:
+			s.dao.RecoverIndex(c, subject.Oid, subject.Type, sort)
+			rpIDs, err = s.dao.Reply.GetIdsSortCount(c, subject.Oid, subject.Type, start, ps)
+		case model.SortByLike:
+			s.dao.RecoverIndex(c, subject.Oid, subject.Type, sort)
+			if rpIDs, err = s.dao.Reply.GetIdsSortLike(c, subject.Oid, subject.Type, start, ps); err != nil {
+				return
+			}
+		}
+		if err != nil {
+			log.Error("s.rootIDs(%d,%d,%d,%d,%d) error(%v)", subject.Oid, subject.Type, sort, start, ps, err)
+			return
+		}
+	} else {
+		var isEnd bool
+		if rpIDs, isEnd, err = s.dao.Range(c, subject.Oid, subject.Type, sort, start, end); err != nil {
+			log.Error("s.dao.Redis.Range(%d,%d,%d,%d,%d) error(%v)", subject.Oid, subject.Type, sort, start, end, err)
+			return
+		}
+
+		if sort == model.SortByFloor && len(rpIDs) < ps && !isEnd {
+			//The addition and deletion of comments may result in the display of duplicate entries
+			rpIDs, err = s.dao.GetIdsSortFloor(c, subject.Oid, subject.Type, start, ps)
+			if err != nil {
+				log.Error("s.rootIDs(%d,%d,%d,%d,%d) error(%v)", subject.Oid, subject.Type, sort, start, ps, err)
+				return
+			}
+			s.dao.RecoverFloorIdx(c, subject.Oid, subject.Type, end+1, false)
+		}
+	}
+	return
 }

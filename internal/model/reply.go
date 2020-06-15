@@ -8,7 +8,11 @@ import (
 const (
 	SubStateNormal = int8(0)
 	SubStateForbid = int8(1)
-	
+
+	SortByFloor = int8(0)
+	SortByCount = int8(1)
+	SortByLike  = int8(2)
+
 	ReplyStateNormal    = int8(0)  // normal
 	ReplyStateHidden    = int8(1)  // hidden by up
 	ReplyStateFiltered  = int8(2)  // filtered
@@ -81,7 +85,7 @@ type Content struct {
 	RpID    int64  `json:"-"`
 	Message string `json:"message"`
 
-	Ats     Int64Bytes `json:"ats,omitempty"`
+	Ats Int64Bytes `json:"ats,omitempty"`
 	//Topics  Mstr       `json:"topics,omitempty"`
 	IP      uint32     `json:"ipi,omitempty"`
 	Plat    int8       `json:"plat"`
