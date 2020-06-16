@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	kafka "github.com/Shopify/sarama"
 	"github.com/go-kratos/kratos/pkg/cache/memcache"
 	"github.com/go-kratos/kratos/pkg/cache/redis"
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
@@ -28,6 +27,7 @@ type Dao interface {
 	CacheReply(c context.Context, id int64) (res *model.Reply, err error)
 	RawReply(ctx context.Context, oid, rpID int64) (r *model.Reply, err error)
 	ExpireIndex(ctx context.Context, oid int64, tp, sort int8) (ok bool, err error)
+	AddReply(c context.Context, oid int64, rp *model.Reply)
 }
 
 // dao dao.
@@ -35,17 +35,17 @@ type dao struct {
 	db         *sql.DB
 	redis      *redis.Redis
 	mc         *memcache.Memcache
-	kafkaPub   kafka.SyncProducer
+	kafkaPub   *Kafka
 	cache      *fanout.Fanout
 	demoExpire int32
 }
 
 // New new a dao and return.
-func New(k kafka.SyncProducer, r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d Dao, cf func(), err error) {
+func New(k *Kafka, r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d Dao, cf func(), err error) {
 	return newDao(k, r, mc, db)
 }
 
-func newDao(k kafka.SyncProducer, r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d *dao, cf func(), err error) {
+func newDao(k *Kafka, r *redis.Redis, mc *memcache.Memcache, db *sql.DB) (d *dao, cf func(), err error) {
 	var cfg struct {
 		DemoExpire xtime.Duration
 	}

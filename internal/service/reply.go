@@ -59,7 +59,7 @@ func (s *Service) persistReply(c context.Context, mid, root, parent int64, tp in
 		},
 	}
 
-	//s.dao.Databus.AddReply(c, subject.Oid, r)
+	s.dao.AddReply(c, subject.Oid, r)
 	return
 }
 
