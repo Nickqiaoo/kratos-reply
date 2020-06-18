@@ -19,8 +19,11 @@ func (d *dao) hit(oid int64) int64 {
 }
 
 const (
-	_selSQL        = "SELECT id,oid,type,mid,root,parent,dialog,count,rcount,`like`,hate,floor,state,attr,ctime,mtime FROM reply_%d WHERE id=?"
-	_selSubjectSQL = "SELECT oid,type,mid,count,rcount,acount,state,attr,ctime,mtime,meta FROM reply_subject_%d WHERE oid=? AND type=?"
+	_selSQL           = "SELECT id,oid,type,mid,root,parent,dialog,count,rcount,`like`,hate,floor,state,attr,ctime,mtime FROM reply_%d WHERE id=?"
+	_selSubjectSQL    = "SELECT oid,type,mid,count,rcount,acount,state,attr,ctime,mtime,meta FROM reply_subject_%d WHERE oid=? AND type=?"
+	_selIdsByFloorSQL = "SELECT id FROM reply_%d WHERE oid=? AND type=? AND root=0 AND state in (0,1,2,5,6) ORDER BY floor DESC limit ?,?"
+	_selIdsByCountSQL = "SELECT id FROM reply_%d WHERE oid=? AND type=? AND root=0 AND state in (0,1,2,5,6) ORDER BY rcount DESC limit ?,?"
+	_selIdsByLikeSQL  = "SELECT id FROM reply_%d WHERE oid=? AND type=? AND root=0 AND state in (0,1,2,5,6) ORDER BY `like` DESC limit ?,?" // like >= 3
 )
 
 func NewDB() (db *sql.DB, cf func(), err error) {
@@ -64,6 +67,78 @@ func (d *dao) RawReply(c context.Context, oid, rpID int64) (r *model.Reply, err 
 		} else {
 			log.Error("row.Scan error(%v)", err)
 		}
+	}
+	return
+}
+
+// GetIdsSortFloor limit get reply ids and order by floor desc.
+func (d *dao) GetIdsSortFloor(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error) {
+	rows, err := d.db.Query(c, fmt.Sprintf(_selIdsByFloorSQL, d.hit(oid)), oid, tp, offset, count)
+	if err != nil {
+		log.Error("dao.selIdsByFloorStmt query err(%v)", err)
+		return
+	}
+	defer rows.Close()
+	var id int64
+	res = make([]int64, 0, count)
+	for rows.Next() {
+		if err = rows.Scan(&id); err != nil {
+			log.Error("rows.scan err is (%v)", err)
+			return
+		}
+		res = append(res, id)
+	}
+	if err = rows.Err(); err != nil {
+		log.Error("rows.err error(%v)", err)
+		return
+	}
+	return
+}
+
+// GetIdsSortCount limit get reply ids and order by rcount desc.
+func (d *dao) GetIdsSortCount(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error) {
+	rows, err := d.db.Query(c, fmt.Sprintf(_selIdsByCountSQL, d.hit(oid)), oid, tp, offset, count)
+	if err != nil {
+		log.Error("dao.selIdsByCountStmt query err(%v)", err)
+		return
+	}
+	defer rows.Close()
+	var id int64
+	res = make([]int64, 0, count)
+	for rows.Next() {
+		if err = rows.Scan(&id); err != nil {
+			log.Error("rows.scan err is (%v)", err)
+			return
+		}
+		res = append(res, id)
+	}
+	if err = rows.Err(); err != nil {
+		log.Error("rows.err error(%v)", err)
+		return
+	}
+	return
+}
+
+// GetIdsSortLike limit get reply ids and order by like desc.
+func (d *dao) GetIdsSortLike(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error) {
+	rows, err := d.db.Query(c, fmt.Sprintf(_selIdsByLikeSQL, d.hit(oid)), oid, tp, offset, count)
+	if err != nil {
+		log.Error(" dao.selIdsByLikeStmt query err(%v)", err)
+		return
+	}
+	defer rows.Close()
+	var id int64
+	res = make([]int64, 0, count)
+	for rows.Next() {
+		if err = rows.Scan(&id); err != nil {
+			log.Error("rows.scan err is (%v)", err)
+			return
+		}
+		res = append(res, id)
+	}
+	if err = rows.Err(); err != nil {
+		log.Error("rows.err error(%v)", err)
+		return
 	}
 	return
 }

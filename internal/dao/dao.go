@@ -24,10 +24,24 @@ type Dao interface {
 	Ping(ctx context.Context) (err error)
 	// bts: -nullcache=&model.Subject{ID:-1} -check_null_code=$!=nil&&$.ID==-1
 	Subject(c context.Context, oid int64, tp int8) (*model.Subject, error)
+
+	//memcache
 	CacheReply(c context.Context, id int64) (res *model.Reply, err error)
+	CacheReplies(c context.Context, ids []int64) (res map[int64]*model.Reply, err error)
+
+	//MySQL
 	RawReply(ctx context.Context, oid, rpID int64) (r *model.Reply, err error)
+
+	//redis
 	ExpireIndex(ctx context.Context, oid int64, tp, sort int8) (ok bool, err error)
+	Range(ctx context.Context, oid int64, tp, sort int8, start, end int) (rpIds []int64, isEnd bool, err error)
+
+	//kafka
 	AddReply(c context.Context, oid int64, rp *model.Reply)
+	GetIdsSortFloor(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error)
+	GetIdsSortCount(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error)
+	GetIdsSortLike(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error)
+	RecoverIndex(c context.Context, oid int64, tp, sort int8)
 }
 
 // dao dao.

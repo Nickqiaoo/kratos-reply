@@ -67,3 +67,21 @@ func (d *dao) ExpireIndex(ctx context.Context, oid int64, tp, sort int8) (ok boo
 	}
 	return
 }
+
+func (d *dao) Range(ctx context.Context, oid int64, tp, sort int8, start, end int) (rpIds []int64, isEnd bool, err error) {
+	key := keyIdx(oid, tp, sort)
+	values, err := redis.Values(d.redis.Do(ctx, "ZREVRANGE", key, start, end))
+	if err != nil {
+		log.Error("conn.Do(ZREVRANGE, %s) error(%v)", key, err)
+		return
+	}
+	if len(values) == 0 {
+		return
+	}
+	err = redis.ScanSlice(values, &rpIds)
+	if len(rpIds) > 0 && rpIds[len(rpIds)-1] == -1 {
+		rpIds = rpIds[:len(rpIds)-1]
+		isEnd = true
+	}
+	return
+}

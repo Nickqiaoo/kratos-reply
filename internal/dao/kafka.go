@@ -20,6 +20,35 @@ type Kafka struct {
 	kafka.SyncProducer
 }
 
+type kafkadata struct {
+	Op      string `json:"op,omitempty"`
+	Mid     int64  `json:"mid,omitempty"`
+	Adid    int64  `json:"adid,omitempty"`
+	Oid     int64  `json:"oid,omitempty"`
+	Rpid    int64  `json:"rpid,omitempty"`
+	Root    int64  `json:"root,omitempty"`
+	Dialog  int64  `json:"dialog,omitempty"`
+	Remark  string `json:"remark,omitempty"`
+	Adname  string `json:"adname,omitempty"`
+	Mtime   int64  `json:"mtime,omitempty"`
+	Action  int8   `json:"action,omitempty"`
+	Sort    int8   `json:"sort,omitempty"`
+	Tp      int8   `json:"tp,omitempty"`
+	Moral   int    `json:"moral,omitempty"`
+	Notify  bool   `json:"notify,omitempty"`
+	Top     uint32 `json:"top,omitempty"`
+	Ftime   int64  `json:"ftime,omitempty"`
+	State   int8   `json:"state,omitempty"`
+	Audit   int8   `json:"audit,omitempty"`
+	Reason  int8   `json:"reason,omitempty"`
+	Content string `json:"content,omitempty"`
+	FReason int8   `json:"freason,omitempty"`
+	Assist  bool   `json:"assist,omitempty"`
+	Count   int    `json:"count,omitempty"`
+	Floor   int    `json:"floor,omitempty"`
+	IsUp    bool   `json:"is_up,omitempty"`
+}
+
 func NewKafka() (k *Kafka, cf func(), err error) {
 	var (
 		cfg      KafkaConfig
@@ -61,7 +90,30 @@ func (d *dao) AddReply(c context.Context, oid int64, rp *model.Reply) {
 		Value:   kafka.ByteEncoder(rpJson),
 	}
 	if _, _, err := d.kafkaPub.SendMessage(m); err != nil {
-		log.Error("PushMsg.send(push pushMsg:%v) error(%v)", m, err)
+		log.Error("send AddReply(%v) error(%v)", m, err)
+	}
+	return
+}
+
+func (d *dao) RecoverIndex(c context.Context, oid int64, tp, sort int8) {
+	data := kafkadata{
+		Oid:  oid,
+		Tp:   tp,
+		Sort: sort,
+	}
+	dataJson, err := json.Marshal(data)
+	if err != nil {
+		log.Error("json marshal error(%v)", err)
+		return
+	}
+	m := &kafka.ProducerMessage{
+		Key:     kafka.StringEncoder(strconv.FormatInt(oid, 10)),
+		Topic:   d.kafkaPub.Topic,
+		Headers: []kafka.RecordHeader{{[]byte("action"), []byte("re_idx")}},
+		Value:   kafka.ByteEncoder(dataJson),
+	}
+	if _, _, err := d.kafkaPub.SendMessage(m); err != nil {
+		log.Error("send RecoverIndex(:%v) error(%v)", m, err)
 	}
 	return
 }

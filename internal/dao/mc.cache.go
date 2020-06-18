@@ -12,6 +12,8 @@
 		DeleteSubjectCache(c context.Context, oid int64, tp int8) (err error)
 		// mc: -key=keyRp -type=get
 		CacheReply(c context.Context, rpID int64) (*model.Reply, error)
+		// mc: -key=keyRp -type=get
+		CacheReplies(c context.Context, rpID []int64) (map[int64]*model.Reply, error)
 	}
 */
 
@@ -86,6 +88,39 @@ func (d *dao) CacheReply(c context.Context, id int64) (res *model.Reply, err err
 	if err != nil {
 		log.Errorv(c, log.KV("CacheReply", fmt.Sprintf("%+v", err)), log.KV("key", key))
 		return
+	}
+	return
+}
+
+// CacheReplies get data from mc
+func (d *dao) CacheReplies(c context.Context, ids []int64) (res map[int64]*model.Reply, err error) {
+	l := len(ids)
+	if l == 0 {
+		return
+	}
+	keysMap := make(map[string]int64, l)
+	keys := make([]string, 0, l)
+	for _, id := range ids {
+		key := keyRp(id)
+		keysMap[key] = id
+		keys = append(keys, key)
+	}
+	replies, err := d.mc.GetMulti(c, keys)
+	if err != nil {
+		log.Errorv(c, log.KV("CacheReplies", fmt.Sprintf("%+v", err)), log.KV("keys", keys))
+		return
+	}
+	for _, key := range replies.Keys() {
+		v := &model.Reply{}
+		err = replies.Scan(key, v)
+		if err != nil {
+			log.Errorv(c, log.KV("CacheReplies", fmt.Sprintf("%+v", err)), log.KV("key", key))
+			return
+		}
+		if res == nil {
+			res = make(map[int64]*model.Reply, len(keys))
+		}
+		res[keysMap[key]] = v
 	}
 	return
 }
