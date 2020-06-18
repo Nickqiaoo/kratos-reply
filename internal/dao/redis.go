@@ -38,6 +38,10 @@ func keyIdx(oid int64, tp, sort int8) string {
 	return _prefixIdx + strconv.FormatInt((oid<<16)|(int64(tp)<<8)|int64(sort), 10)
 }
 
+func keyRtIdx(rpID int64) string {
+	return _prefixRtIdx + strconv.FormatInt(rpID, 10)
+}
+
 func NewRedis() (r *redis.Redis, cf func(), err error) {
 	var (
 		cfg redis.Config
@@ -82,6 +86,53 @@ func (d *dao) Range(ctx context.Context, oid int64, tp, sort int8, start, end in
 	if len(rpIds) > 0 && rpIds[len(rpIds)-1] == -1 {
 		rpIds = rpIds[:len(rpIds)-1]
 		isEnd = true
+	}
+	return
+}
+
+// RangeByRoots range roots's replyies.
+func (d *dao) RangeByRoots(c context.Context, roots []int64, start, end int) (mrpids map[int64][]int64, idx, miss []int64, err error) {
+	conn := d.redis.Conn(c)
+	defer conn.Close()
+	for _, root := range roots {
+		// if exist delay expire time
+		if err = conn.Send("EXPIRE", keyRtIdx(root), dao.expireRdsIdx); err != nil {
+			log.Error("conn.Send(EXPIRE) err(%v)", err)
+			return
+		}
+		if err = conn.Send("ZRANGE", keyRtIdx(root), start, end); err != nil {
+			log.Error("conn.Send(ZRANGE) err(%v)", err)
+			return
+		}
+	}
+	if err = conn.Flush(); err != nil {
+		log.Error("conn.SEND(FLUSH) err(%v)", err)
+		return
+	}
+	mrpids = make(map[int64][]int64, len(roots))
+	for _, root := range roots {
+		var (
+			rpids  []int64
+			values []interface{}
+		)
+		if _, err = conn.Receive(); err != nil {
+			log.Error("redis.Bool() err(%v)", err)
+			return
+		}
+		if values, err = redis.Values(conn.Receive()); err != nil {
+			log.Error("redis.Values() err(%v)", err)
+			return
+		}
+		if len(values) == 0 {
+			miss = append(miss, root)
+			continue
+		}
+		if err = redis.ScanSlice(values, &rpids); err != nil {
+			log.Error("redis.ScanSlice() err(%v) ", err)
+			return
+		}
+		idx = append(idx, rpids...)
+		mrpids[root] = rpids
 	}
 	return
 }

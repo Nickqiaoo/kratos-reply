@@ -214,11 +214,11 @@ func (s *Service) repliesMap(c context.Context, oid int64, tp int8, rpIDs []int6
 			mrp map[int64]*model.Reply
 			mrc map[int64]*model.Content
 		)
-		if mrp, err = s.dao.Reply.GetByIds(c, oid, tp, missIDs); err != nil {
-			log.Error("s.reply.GetByIds(%d,%d,%d) error(%v)", oid, tp, rpIDs, err)
+		if mrp, err = s.dao.GetReplyByIds(c, oid, tp, missIDs); err != nil {
+			log.Error("s.reply.GetReplyByIds(%d,%d,%d) error(%v)", oid, tp, rpIDs, err)
 			return
 		}
-		if mrc, err = s.dao.Content.GetByIds(c, oid, missIDs); err != nil {
+		if mrc, err = s.dao.GetContentByIds(c, oid, missIDs); err != nil {
 			log.Error("s.content.GetByIds(%d,%d) error(%v)", oid, rpIDs, err)
 			return
 		}
@@ -270,6 +270,33 @@ func (s *Service) secondReplies(c context.Context, sub *model.Subject, rootMap m
 		}
 		res[root] = seconds
 		rs = append(rs, seconds...)
+	}
+	return
+}
+
+func (s *Service) getIdsByRoots(c context.Context, oid int64, roots []int64, tp int8, pn, ps int) (sidsmap map[int64][]int64, ids []int64, err error) {
+	var (
+		start    = (pn - 1) * ps
+		end      = start + ps - 1
+		miss     []int64
+		tmprpIDs []int64
+	)
+	if sidsmap, ids, miss, err = s.dao.RangeByRoots(c, roots, start, end); err != nil {
+		log.Error("s.dao.Redis.RangeByRoots() err(%v)", err)
+		return
+	}
+	if len(miss) == 0 {
+		return
+	}
+	for _, root := range miss {
+		if tmprpIDs, err = s.dao.GetIdsByRoot(c, oid, root, tp, start, ps); err != nil {
+			log.Error("s.dao.Reply.GetIdsByRoot(oid %d,tp %d,root %d) err(%v)", oid, tp, root, err)
+		}
+		if len(tmprpIDs) != 0 {
+			sidsmap[root] = tmprpIDs
+			ids = append(ids, tmprpIDs...)
+			s.dao.RecoverIndexByRoot(c, oid, root, tp)
+		}
 	}
 	return
 }

@@ -117,3 +117,27 @@ func (d *dao) RecoverIndex(c context.Context, oid int64, tp, sort int8) {
 	}
 	return
 }
+
+// RecoverIndexByRoot push event message into kafka.
+func (d *dao) RecoverIndexByRoot(c context.Context, oid, root int64, tp int8) {
+	data := kafkadata{
+		Oid:  oid,
+		Tp:   tp,
+		Root: root,
+	}
+	dataJson, err := json.Marshal(data)
+	if err != nil {
+		log.Error("json marshal error(%v)", err)
+		return
+	}
+	m := &kafka.ProducerMessage{
+		Key:     kafka.StringEncoder(strconv.FormatInt(oid, 10)),
+		Topic:   d.kafkaPub.Topic,
+		Headers: []kafka.RecordHeader{{[]byte("action"), []byte("re_rt_idx")}},
+		Value:   kafka.ByteEncoder(dataJson),
+	}
+	if _, _, err := d.kafkaPub.SendMessage(m); err != nil {
+		log.Error("send RecoverRootIndex(:%v) error(%v)", m, err)
+	}
+	return
+}

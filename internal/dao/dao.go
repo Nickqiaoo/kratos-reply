@@ -31,10 +31,14 @@ type Dao interface {
 
 	//MySQL
 	RawReply(ctx context.Context, oid, rpID int64) (r *model.Reply, err error)
+	GetReplyByIds(c context.Context, oid int64, tp int8, rpIds []int64) (rpMap map[int64]*model.Reply, err error)
+	GetContentByIds(c context.Context, oid int64, rpIds []int64) (rcMap map[int64]*model.Content, err error)
+	GetIdsByRoot(c context.Context, oid, root int64, tp int8, offset, count int) (res []int64, err error)
 
 	//redis
 	ExpireIndex(ctx context.Context, oid int64, tp, sort int8) (ok bool, err error)
 	Range(ctx context.Context, oid int64, tp, sort int8, start, end int) (rpIds []int64, isEnd bool, err error)
+	RangeByRoots(c context.Context, roots []int64, start, end int) (mrpids map[int64][]int64, idx, miss []int64, err error)
 
 	//kafka
 	AddReply(c context.Context, oid int64, rp *model.Reply)
@@ -42,6 +46,7 @@ type Dao interface {
 	GetIdsSortCount(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error)
 	GetIdsSortLike(c context.Context, oid int64, tp int8, offset, count int) (res []int64, err error)
 	RecoverIndex(c context.Context, oid int64, tp, sort int8)
+	RecoverIndexByRoot(c context.Context, oid, root int64, tp int8)
 }
 
 // dao dao.
