@@ -113,6 +113,16 @@ func (s *Service) RootReplies(c context.Context, param *model.PageParam) (page *
 		return
 	}
 	roots, seconds, total, err := s.rootReplies(c, subject, param.Mid, param.Sort, param.Pn, param.Ps, 1, s.sndDefCnt)
+	page = &model.PageResult{
+		Subject:  sub,
+		TopAdmin: topAdmin,
+		TopUpper: topUpper,
+		Hots:     hots,
+		Roots:    roots,
+		Total:    total,
+		AllCount: subject.ACount,
+	}
+	return
 }
 
 func (s *Service) rootReplies(c context.Context, subject *model.Subject, mid int64, sort int8, pn, ps, secondPn, secondPs int) (roots, seconds []*model.Reply, total int, err error) {
@@ -231,11 +241,9 @@ func (s *Service) repliesMap(c context.Context, oid int64, tp int8, rpIDs []int6
 			}
 		}
 		// asynchronized add reply cache
-		select {
-		case s.replyChan <- replyChan{rps: rs}:
-		default:
-			log.Warn("s.replyChan is full")
-		}
+		s.cache.Do(c, func(c context.Context) {
+			s.dao.AddReply()
+		})
 	}
 	return
 }
