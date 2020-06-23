@@ -112,12 +112,8 @@ func (s *Service) RootReplies(c context.Context, param *model.PageParam) (page *
 	if err != nil {
 		return
 	}
-	roots, seconds, total, err := s.rootReplies(c, subject, param.Mid, param.Sort, param.Pn, param.Ps, 1, s.sndDefCnt)
+	roots, _, total, err := s.rootReplies(c, subject, param.Mid, param.Sort, param.Pn, param.Ps, 1, s.sndDefCnt)
 	page = &model.PageResult{
-		Subject:  sub,
-		TopAdmin: topAdmin,
-		TopUpper: topUpper,
-		Hots:     hots,
 		Roots:    roots,
 		Total:    total,
 		AllCount: subject.ACount,
