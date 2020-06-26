@@ -194,7 +194,7 @@ func (d *dao) GetContentByIds(c context.Context, oid int64, rpIds []int64) (rcMa
 	rcMap = make(map[int64]*model.Content, len(rpIds))
 	for rows.Next() {
 		rc := &model.Content{}
-		if err = rows.Scan(&rc.RpID, &rc.Message, &rc.Ats, &rc.IP, &rc.Plat, &rc.Device, &rc.Topics); err != nil {
+		if err = rows.Scan(&rc.RpID, &rc.Message, &rc.Ats, &rc.IP, &rc.Plat, &rc.Device); err != nil {
 			log.Error("row.Scan error(%v)", err)
 			return
 		}

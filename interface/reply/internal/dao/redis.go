@@ -66,7 +66,7 @@ func (d *dao) PingRedis(ctx context.Context) (err error) {
 }
 
 func (d *dao) ExpireIndex(ctx context.Context, oid int64, tp, sort int8) (ok bool, err error) {
-	if ok, err = redis.Bool(d.redis.Do(ctx, "EXPIRE", keyIdx(oid, tp, sort), dao.expireRdsIdx)); err != nil {
+	if ok, err = redis.Bool(d.redis.Do(ctx, "EXPIRE", keyIdx(oid, tp, sort), d.demoExpire)); err != nil {
 		log.Error("conn.Do(EXPIRE) error(%v)", err)
 	}
 	return
@@ -96,7 +96,7 @@ func (d *dao) RangeByRoots(c context.Context, roots []int64, start, end int) (mr
 	defer conn.Close()
 	for _, root := range roots {
 		// if exist delay expire time
-		if err = conn.Send("EXPIRE", keyRtIdx(root), dao.expireRdsIdx); err != nil {
+		if err = conn.Send("EXPIRE", keyRtIdx(root), d.demoExpire); err != nil {
 			log.Error("conn.Send(EXPIRE) err(%v)", err)
 			return
 		}

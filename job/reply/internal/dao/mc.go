@@ -2,28 +2,31 @@ package dao
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
-	"reply/internal/model"
 	"github.com/go-kratos/kratos/pkg/cache/memcache"
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 	"github.com/go-kratos/kratos/pkg/log"
+	"reply/internal/model"
+)
+
+const (
+	_prefixSub = "s_"
+	_prefixRp  = "r_"
 )
 
 //go:generate kratos tool genmc
 type _mc interface {
-	// mc: -key=keyArt -type=get
-	CacheArticle(c context.Context, id int64) (*model.Article, error)
-	// mc: -key=keyArt -expire=d.demoExpire
-	AddCacheArticle(c context.Context, id int64, art *model.Article) (err error)
-	// mc: -key=keyArt
-	DeleteArticleCache(c context.Context, id int64) (err error)
+	// mc: -key=keySub -expire=d.demoExpire
+	AddCacheSubject(c context.Context, oid int64, sub *model.Subject, tp int8) (err error)
+	// mc: -key=keyRp -expire=d.demoExpire
+	AddCacheReply(c context.Context, rpid int64, reply *model.Reply) (err error)
 }
 
 func NewMC() (mc *memcache.Memcache, cf func(), err error) {
 	var (
 		cfg memcache.Config
-		ct paladin.TOML
+		ct  paladin.TOML
 	)
 	if err = paladin.Get("memcache.toml").Unmarshal(&ct); err != nil {
 		return
@@ -31,8 +34,8 @@ func NewMC() (mc *memcache.Memcache, cf func(), err error) {
 	if err = ct.Get("Client").UnmarshalTOML(&cfg); err != nil {
 		return
 	}
-	mc =  memcache.New(&cfg)
-	cf = func() {mc.Close()}
+	mc = memcache.New(&cfg)
+	cf = func() { mc.Close() }
 	return
 }
 
@@ -43,6 +46,10 @@ func (d *dao) PingMC(ctx context.Context) (err error) {
 	return
 }
 
-func keyArt(id int64) string {
-	return fmt.Sprintf("art_%d", id)
+func keySub(oid int64, tp int8) string {
+	return _prefixSub + strconv.FormatInt((oid<<8)|int64(tp), 10)
+}
+
+func keyRp(rpID int64) string {
+	return _prefixRp + strconv.FormatInt(rpID, 10)
 }

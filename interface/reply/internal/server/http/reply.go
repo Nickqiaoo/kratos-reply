@@ -88,15 +88,10 @@ func reply(c *bm.Context) {
 	}
 	data := map[string]interface{}{
 		"page": map[string]int{
-			"num":    curPage,
-			"size":   perPage,
+			"num":    param.Pn,
+			"size":   param.Ps,
 			"count":  res.Total,
 			"acount": res.AllCount,
-		},
-		"config": map[string]int{
-			"showentry": showEntry,
-			"showadmin": showAdmin,
-			"showfloor": showFloor,
 		},
 		"replies": res.Roots,
 		"hots":    res.Hots,
@@ -104,8 +99,7 @@ func reply(c *bm.Context) {
 			"mid": res.Subject.Mid,
 			"top": res.TopUpper,
 		},
-		"top":    res.TopAdmin,
-		"notice": rpSvr.RplyNotice(c, int8(plat), build, appStr, buvid),
+		"top": res.TopAdmin,
 	}
 	c.JSON(data, nil)
 }

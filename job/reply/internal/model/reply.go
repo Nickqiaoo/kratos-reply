@@ -37,8 +37,8 @@ type Reply struct {
 	Root      int64      `json:"root"`
 	Parent    int64      `json:"parent"`
 	Dialog    int64      `json:"dialog"`
-	Count     int        `json:"count"`  //子评论总数，包括删除的
-	RCount    int        `json:"rcount"` //子评论总数
+	Count     int        `json:"count"`
+	RCount    int        `json:"rcount"`
 	Floor     int        `json:"floor,omitempty"`
 	State     int8       `json:"state"`
 	FansGrade int8       `json:"fansgrade"`
@@ -70,9 +70,9 @@ type Subject struct {
 	Oid    int64      `json:"oid"`
 	Type   int8       `json:"type"`
 	Mid    int64      `json:"mid"`
-	Count  int        `json:"count"`  //根评论总数，包括删除的
-	RCount int        `json:"rcount"` //根评论数
-	ACount int        `json:"acount"` //评论总数，包括子评论
+	Count  int        `json:"count"`
+	RCount int        `json:"rcount"`
+	ACount int        `json:"acount"`
 	State  int8       `json:"state"`
 	Attr   uint32     `json:"attr"`
 	Meta   string     `json:"meta"`

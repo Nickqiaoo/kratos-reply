@@ -14,30 +14,39 @@ import (
 // Injectors from wire.go:
 
 func InitApp() (*App, func(), error) {
-	redis, cleanup, err := dao.NewRedis()
+	kafka, cleanup, err := dao.NewKafka()
 	if err != nil {
 		return nil, nil, err
 	}
-	memcache, cleanup2, err := dao.NewMC()
+	redis, cleanup2, err := dao.NewRedis()
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	db, cleanup3, err := dao.NewDB()
+	memcache, cleanup3, err := dao.NewMC()
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	daoDao, cleanup4, err := dao.New(redis, memcache, db)
+	db, cleanup4, err := dao.NewDB()
 	if err != nil {
 		cleanup3()
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	serviceService, cleanup5, err := service.New(daoDao)
+	daoDao, cleanup5, err := dao.New(kafka, redis, memcache, db)
 	if err != nil {
+		cleanup4()
+		cleanup3()
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	serviceService, cleanup6, err := service.New(daoDao)
+	if err != nil {
+		cleanup5()
 		cleanup4()
 		cleanup3()
 		cleanup2()
@@ -46,6 +55,7 @@ func InitApp() (*App, func(), error) {
 	}
 	engine, err := http.New(serviceService)
 	if err != nil {
+		cleanup6()
 		cleanup5()
 		cleanup4()
 		cleanup3()
@@ -53,8 +63,9 @@ func InitApp() (*App, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	app, cleanup6, err := NewApp(serviceService, engine)
+	app, cleanup7, err := NewApp(serviceService, engine)
 	if err != nil {
+		cleanup6()
 		cleanup5()
 		cleanup4()
 		cleanup3()
@@ -63,6 +74,7 @@ func InitApp() (*App, func(), error) {
 		return nil, nil, err
 	}
 	return app, func() {
+		cleanup7()
 		cleanup6()
 		cleanup5()
 		cleanup4()

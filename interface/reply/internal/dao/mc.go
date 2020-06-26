@@ -29,7 +29,6 @@ type _mc interface {
 	DeleteSubjectCache(c context.Context, oid int64, tp int8) (err error)
 	// mc: -key=keyRp -type=get
 	CacheReply(c context.Context, rpID int64) (*model.Reply, error)
-	AddCacheReply(c context.Context)
 	// mc: -key=keyRp -type=get
 	CacheReplies(c context.Context, rpID []int64) (map[int64]*model.Reply, error)
 }
