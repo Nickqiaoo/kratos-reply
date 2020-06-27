@@ -6,6 +6,7 @@ import (
 	kafka "github.com/Shopify/sarama"
 	"github.com/go-kratos/kratos/pkg/conf/paladin"
 	"github.com/go-kratos/kratos/pkg/log"
+	"github.com/pkg/errors"
 	"kratos-reply/internal/model"
 	"strconv"
 )
@@ -56,16 +57,23 @@ func NewKafka() (k *Kafka, cf func(), err error) {
 		kafkaPro kafka.SyncProducer
 	)
 
-	if err = ct.Get("kafka.toml").Unmarshal(&ct); err != nil {
+	if err = paladin.Get("kafka.toml").Unmarshal(&ct); err != nil {
+		err = errors.WithStack(err)
 		return
 	}
-	if err = ct.Get("Client").UnmarshalTOML(&cfg); err != nil {
+	if err = ct.Get("Kafka").UnmarshalTOML(&cfg); err != nil {
 		return
 	}
+
 	kc := kafka.NewConfig()
 	kc.Producer.RequiredAcks = kafka.WaitForAll // Wait for all in-sync replicas to ack the message
 	kc.Producer.Retry.Max = 10                  // Retry up to 10 times to produce the message
 	kc.Producer.Return.Successes = true
+	ver, err := kafka.ParseKafkaVersion("2.4.0")
+	if err != nil {
+		return
+	}
+	kc.Version = ver
 	if kafkaPro, err = kafka.NewSyncProducer(cfg.Brokers, kc); err != nil {
 		return
 	}

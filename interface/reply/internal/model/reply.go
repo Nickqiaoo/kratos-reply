@@ -64,6 +64,18 @@ type Reply struct {
 	//Folder Folder `json:"folder"`
 }
 
+// Clone clone a reply content.
+func (r *Reply) Clone() (res *Reply) {
+	content := new(Content)
+	if r.Content != nil {
+		*content = *(r.Content)
+	}
+	res = new(Reply)
+	*res = *r
+	res.Content = content
+	return
+}
+
 // Subject ReplySubject
 type Subject struct {
 	ID     int64      `json:"-"`

@@ -63,3 +63,21 @@ func keySub(oid int64, tp int8) string {
 func keyRp(rpID int64) string {
 	return _prefixRp + strconv.FormatInt(rpID, 10)
 }
+
+// AddCacheReply add reply into memcache.
+func (d *dao) AddCacheReply(c context.Context, rs ...*model.Reply) (err error) {
+	if len(rs) == 0 {
+		return
+	}
+	for _, r := range rs {
+		if r == nil {
+			continue
+		}
+		key := keyRp(r.RpID)
+		item := &memcache.Item{Key: key, Object: r, Expiration: d.demoExpire, Flags: memcache.FlagJSON}
+		if err = d.mc.Set(c, item); err != nil {
+			log.Error("conn.Set(%s,%v) error(%v)", key, r, err)
+		}
+	}
+	return
+}

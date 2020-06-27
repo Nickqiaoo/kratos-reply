@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/Shopify/sarama"
-	"github.com/prometheus/common/log"
+	"github.com/go-kratos/kratos/pkg/log"
 	"strconv"
 
 	cluster "github.com/bsm/sarama-cluster"
@@ -51,6 +51,11 @@ func New(d dao.Dao) (s *Service, cf func(), err error) {
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Group.Return.Notifications = true
+	ver, err := sarama.ParseKafkaVersion("2.4.0")
+	if err != nil {
+		return
+	}
+	config.Version = ver
 	s.consumer, err = cluster.NewConsumer(kafka.Brokers, kafka.Group, []string{kafka.Topic}, config)
 	if err != nil {
 		panic(err)
@@ -75,6 +80,7 @@ func (s *Service) consumeProc(i int) {
 			return
 		}
 		action := s.getAction(msg.Headers)
+		log.Info("receive message action(%v)", action)
 		switch action {
 		case "add":
 			s.actionAdd(context.Background(), msg.Value)

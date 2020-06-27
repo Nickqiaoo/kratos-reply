@@ -16,7 +16,8 @@ const (
 )
 
 func (d *dao) hit(oid int64) int64 {
-	return oid % _replySharding
+	return 0
+	//return oid % _replySharding
 }
 
 const (

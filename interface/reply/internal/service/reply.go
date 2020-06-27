@@ -81,7 +81,7 @@ func (s *Service) GetReply(c context.Context, oid, rpID int64, tp int8) (*model.
 			return nil, err
 		}
 		if r == nil {
-			return nil, ecode.ReplyNotExist
+			return nil, ecode.RequestErr
 		}
 		if r.Oid != oid {
 			log.Warn("reply dismatches with parameter, oid: %d, rpID: %d, tp: %d, actual: %d, %d, %d", oid, rpID, tp, r.Oid, r.RpID, r.Type)
@@ -98,13 +98,14 @@ func (s *Service) Subject(c context.Context, oid int64, tp int8) (*model.Subject
 		return nil, err
 	}
 	if subject.State == model.SubStateForbid {
-		return nil, ecode.ReplyForbidReply
+		return nil, ecode.RequestErr
 	}
 	return subject, nil
 }
 
 func (s *Service) nextID(c context.Context) (int64, error) {
-	return 1, nil
+	s.rpid++
+	return s.rpid, nil
 }
 
 func (s *Service) RootReplies(c context.Context, param *model.PageParam) (page *model.PageResult, err error) {
@@ -174,7 +175,8 @@ func (s *Service) rootReplyIDs(c context.Context, subject *model.Subject, sort i
 	if !ok {
 		switch sort {
 		case model.SortByFloor:
-			s.dao.RecoverFloorIdx(c, subject.Oid, subject.Type, end+1, false)
+			//s.dao.RecoverFloorIdx(c, subject.Oid, subject.Type, end+1, false)
+			s.dao.RecoverIndex(c, subject.Oid, subject.Type, sort)
 			rpIDs, err = s.dao.GetIdsSortFloor(c, subject.Oid, subject.Type, start, ps)
 		case model.SortByCount:
 			s.dao.RecoverIndex(c, subject.Oid, subject.Type, sort)
@@ -238,7 +240,7 @@ func (s *Service) repliesMap(c context.Context, oid int64, tp int8, rpIDs []int6
 		}
 		// asynchronized add reply cache
 		s.cache.Do(c, func(c context.Context) {
-			s.dao.AddReply()
+			s.dao.AddCacheReply(c, rs...)
 		})
 	}
 	return

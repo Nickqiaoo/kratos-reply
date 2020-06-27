@@ -28,6 +28,7 @@ type Dao interface {
 	//memcache
 	CacheReply(c context.Context, id int64) (res *model.Reply, err error)
 	CacheReplies(c context.Context, ids []int64) (res map[int64]*model.Reply, err error)
+	AddCacheReply(c context.Context, rs ...*model.Reply) (err error)
 
 	//MySQL
 	RawReply(ctx context.Context, oid, rpID int64) (r *model.Reply, err error)

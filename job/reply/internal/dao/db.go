@@ -16,7 +16,8 @@ const (
 )
 
 func (d *dao) hit(oid int64) int64 {
-	return oid % _replySharding
+	return 0
+	//return oid % _replySharding
 }
 
 const (
@@ -24,7 +25,7 @@ const (
 	_incrSubCntSQL   = "UPDATE reply_subject_%d SET count=count+1,rcount=rcount+1,acount=acount+1,mtime=? WHERE oid=? AND type=?"
 	_selSQLForUpdate = "SELECT id,oid,type,mid,root,parent,dialog,count,rcount,`like`,hate,floor,state,attr,ctime,mtime FROM reply_%d WHERE id=? for update"
 	_incrSubACntSQL  = "UPDATE reply_subject_%d SET acount=acount+?,mtime=? WHERE oid=? AND type=?"
-	_inContSQL       = "INSERT IGNORE INTO reply_content_%d (rpid,message,ats,ip,plat,device,version,ctime,mtime,topics) VALUES(?,?,?,?,?,?,?,?,?,?)"
+	_inContSQL       = "INSERT IGNORE INTO reply_content_%d (rpid,message,ats,ip,plat,device,version,ctime,mtime) VALUES(?,?,?,?,?,?,?,?,?)"
 
 	_selSubjectSQL = "SELECT oid,type,mid,count,rcount,acount,state,attr,ctime,mtime,meta FROM reply_subject_%d WHERE oid=? AND type=?"
 	_incrCntSQL    = "UPDATE reply_%d SET count=count+1,rcount=rcount+1,mtime=? WHERE id=?"

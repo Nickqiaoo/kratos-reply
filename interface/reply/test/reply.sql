@@ -1,4 +1,4 @@
-CREATE TABLE `reply` (
+CREATE TABLE `reply_0` (
   `id` bigint(11) UNSIGNED NOT NULL COMMENT '评论ID',
   `oid` int(11) NOT NULL COMMENT '业务ID',
   `type` tinyint NOT NULL COMMENT '业务类型',
@@ -19,7 +19,7 @@ CREATE TABLE `reply` (
   KEY `ix_mtime` (`mtime`)
 ) COMMENT='评论表';
 
-CREATE TABLE `reply_subject` (
+CREATE TABLE `reply_subject_0` (
   `oid` int(11) NOT NULL COMMENT '业务ID',
   `type` tinyint NOT NULL COMMENT '业务类型',
   `mid` bigint(11) NOT NULL COMMENT '用户ID',
@@ -31,11 +31,11 @@ CREATE TABLE `reply_subject` (
   `meta` varchar(256) NOT NULL COMMENT '元信息',
   `mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
   `ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`oid`,`type`),
   KEY `ix_mtime` (`mtime`)
 ) COMMENT='评论信息表';
 
-CREATE TABLE `reply_content` (
+CREATE TABLE `reply_content_0` (
   `rpid` bigint(11) UNSIGNED NOT NULL COMMENT '评论ID',
   `message` varchar(4000) NOT NULL COMMENT '评论内容',
   `ats` blob NOT NULL COMMENT '@id',
@@ -43,8 +43,9 @@ CREATE TABLE `reply_content` (
   `plat` tinyint NOT NULL COMMENT '终端',
   `device` varchar(50) NOT NULL COMMENT '设备',
   `version` varchar(50) NOT NULL COMMENT '版本',
+
   `mtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
   `ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`rpid`),
   KEY `ix_mtime` (`mtime`)
 ) COMMENT='评论内容表';

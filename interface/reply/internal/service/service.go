@@ -16,6 +16,7 @@ type Service struct {
 	dao       dao.Dao
 	sndDefCnt int
 	cache     *fanout.Fanout
+	rpid      int64
 }
 
 // New new a service and return.
@@ -24,6 +25,7 @@ func New(d dao.Dao) (s *Service, cf func(), err error) {
 		ac:    &paladin.TOML{},
 		dao:   d,
 		cache: fanout.New("cache"),
+		rpid:  1,
 	}
 	cf = s.Close
 	err = paladin.Watch("application.toml", s.ac)

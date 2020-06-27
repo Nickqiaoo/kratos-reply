@@ -33,7 +33,7 @@ func (d *dao) Subject(c context.Context, oid int64, tp int8) (res *model.Subject
 			res = nil
 		}
 	}()
-	if res != nil {
+	if res == nil {
 		cache.MetricHits.Inc("bts:Subject")
 		return
 	}

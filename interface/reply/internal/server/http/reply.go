@@ -22,10 +22,10 @@ func addReply(c *bm.Context) {
 		Mid    int64  `form:"mid" validate:"min=1,required"`
 		Oid    int64  `form:"oid" validate:"min=1,required"`
 		Type   int8   `form:"type" validate:"required"`
-		Msg    string `form:"message" validate:"required"`
-		Root   int64  `form:"root" validate:"required"`
-		Parent int64  `form:"parent" validate:"required"`
-		AtStr  string `form:"at" validate:"required"`
+		Msg    string `form:"msg" validate:"required"`
+		Root   int64  `form:"root"`
+		Parent int64  `form:"parent"`
+		AtStr  string `form:"at" `
 	})
 	if err = c.Bind(parm); err != nil {
 		c.JSON(nil, ecode.RequestErr)
